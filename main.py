@@ -1,46 +1,39 @@
-import requests
-from bs4 import BeautifulSoup
-
-HEADERS = {
-    'authority': 'www.ctee.com.tw',
-    'Referer': 'https://www.ctee.com.tw/livenews/policy',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36'
-}
-
-########################################
-def get_article_list():
-    url = 'https://www.ctee.com.tw/rss_web/livenews/policy'
-    response = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(response.text, 'xml')
-    items = soup.find_all('item')
-    articles = []
-    for item in items:
-        article = {
-            'title': item.find('title').text,
-            'link': item.find('link').text,
-            'datetime': item.find('pubDate').text
-        }
-        articles.append(article)
-    return articles
-
-def get_article(url):
-    response = requests.get(url, headers=HEADERS)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    p_tags = soup.find('article').find_all('p')
-    p_tags = [p_tag.text for p_tag in p_tags if p_tag.text != '']
-    description = "\n\n".join(p_tags)
-    return description
+import excel
+from ctee import Ctee
 
 ########################################
 if __name__ == '__main__':
-    articles = get_article_list()
-    for index, article in enumerate(articles):
-        print(f'No.{index}')
-        print(f'title: {article["title"]}')
-        print(f'link: {article["link"]}')
-        print(f'datetime: {article["datetime"]}\n')
+    # 沒有檔案就建立
+    excel.check_xlsx()
+    # 取得文章列表
+    ctee = Ctee()
+    articles = ctee.get_article_list()
 
-    description = get_article(articles[0]['link'])
-    print("========================================")
-    print(f'[{articles[0]["title"]}]\n\n{description}')
+    # 遍歷文章列表
+    counter = 0
+    for article in articles:
+        # 檢查文章是否已經存在
+        existing = excel.check_existance(article['id'])
+        if (existing):
+            counter += 1
+            continue
+        # 取得文章內容
+        content = ctee.get_article_content(article['link'])
+        # 新增一筆資料
+        data_to_add = [
+            article['id'],
+            article['title'],
+            article['link'],
+            article['datetime'],
+            article['author'],
+            content
+        ]
+        excel.add_data(data_to_add)
+        print(f'\033[92m => Data addition completed\033[0m')
+    
+    print('===================================')
+    message = 'Done' +\
+            f'\033[92m ({len(articles)-counter} added)\033[0m' +\
+            f'\033[93m ({counter} already exist)\033[0m'
+    print(message)
     

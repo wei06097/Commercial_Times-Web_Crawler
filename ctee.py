@@ -20,7 +20,7 @@ class Ctee:
         url = 'https://www.ctee.com.tw/rss_web/livenews/policy'
         response = requests.get(url, headers=self.__HEADERS)
         color = '\033[91m' if response.status_code == 403 else '\033[92m'
-        print(f'[{self.__get_datetime()}] {color}{response}\033[0m list\n')
+        print(f'[{self.__get_datetime()}] {color}{response}\033[0m list')
 
         soup = BeautifulSoup(response.text, 'xml')
         items = soup.find_all('item')

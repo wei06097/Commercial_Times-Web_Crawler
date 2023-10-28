@@ -21,7 +21,7 @@ def check_existance(id):
     sheet = workbook.active
     existing = False
     column_to_search = sheet['A']
-    for cell in column_to_search:
+    for cell in column_to_search[::-1]:
         if cell.value == id:
             existing = True
             break

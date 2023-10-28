@@ -17,8 +17,11 @@ class Ctee:
     
     ### 取得文章列表
     def get_article_list(self):
-        url = 'https://www.ctee.com.tw/rss_web/livenews/policy'
-        response = requests.get(url, headers=self.__HEADERS)
+        try:
+            url = 'https://www.ctee.com.tw/rss_web/livenews/policy'
+            response = requests.get(url, headers=self.__HEADERS)
+        except Exception:
+            return []
         color = '\033[91m' if response.status_code == 403 else '\033[92m'
         print(f'[{self.__get_datetime()}] {color}{response}\033[0m list')
 
@@ -38,7 +41,10 @@ class Ctee:
     
     ### 取得文章內容
     def get_article_content(self, url):
-        response = requests.get(url, headers=self.__HEADERS)
+        try:
+            response = requests.get(url, headers=self.__HEADERS)
+        except Exception:
+            return ''
         color = '\033[91m' if response.status_code == 403 else '\033[92m'
         print(f'[{self.__get_datetime()}] {color}{response}\033[0m article')
         
